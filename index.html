@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>HackWithAI — AI Tools for Engineers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:       #0D1117;
+      --bg2:      #161B22;
+      --bg3:      #21262D;
+      --cyan:     #00D4FF;
+      --amber:    #F5A623;
+      --green:    #3FB950;
+      --text:     #E6EDF3;
+      --muted:    #8B949E;
+      --border:   #30363D;
+      --red:      #F85149;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-weight: 300;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 2.5rem;
+      background: rgba(13,17,23,0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem; font-weight: 700;
+      color: var(--cyan); text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .nav-logo span { color: var(--text); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; align-items: center; }
+    .nav-links a {
+      font-size: 0.82rem; color: var(--muted);
+      text-decoration: none; transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--cyan); color: var(--bg) !important;
+      padding: 0.45rem 1.1rem;
+      font-size: 0.82rem !important; font-weight: 600 !important;
+      transition: opacity 0.2s !important;
+    }
+    .nav-cta:hover { opacity: 0.85; }
+
+    /* HERO */
+    .hero {
+      min-height: 100svh;
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 7rem 2.5rem 4rem;
+      max-width: 900px; margin: 0 auto;
+      position: relative;
+    }
+    .hero-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem; color: var(--green);
+      margin-bottom: 2rem;
+      opacity: 0; animation: fadeIn 0.5s 0.2s ease forwards;
+    }
+    .hero-tag::before { content: '> '; color: var(--muted); }
+    .terminal-line {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(2rem, 5vw, 3.8rem);
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--text);
+      letter-spacing: -0.03em;
+      opacity: 0; animation: fadeIn 0.5s 0.4s ease forwards;
+    }
+    .terminal-line .cyan { color: var(--cyan); }
+    .terminal-line .amber { color: var(--amber); }
+    .cursor {
+      display: inline-block; width: 3px; height: 1em;
+      background: var(--cyan); margin-left: 4px;
+      animation: blink 1s step-end infinite;
+      vertical-align: text-bottom;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    .hero-sub {
+      margin-top: 1.8rem;
+      font-size: 1.05rem; color: var(--muted);
+      max-width: 52ch; line-height: 1.75;
+      opacity: 0; animation: fadeIn 0.5s 0.6s ease forwards;
+    }
+    .hero-actions {
+      margin-top: 2.5rem; display: flex; gap: 1rem; flex-wrap: wrap;
+      opacity: 0; animation: fadeIn 0.5s 0.8s ease forwards;
+    }
+    .btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem; font-weight: 500;
+      padding: 0.75rem 1.6rem;
+      text-decoration: none; display: inline-block;
+      transition: all 0.2s; cursor: pointer; border: none;
+    }
+    .btn-primary { background: var(--cyan); color: var(--bg); }
+    .btn-primary:hover { background: #33ddff; }
+    .btn-secondary {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--cyan); color: var(--cyan); }
+    .hero-stats {
+      margin-top: 4rem; display: flex; gap: 3rem; flex-wrap: wrap;
+      padding-top: 2rem; border-top: 1px solid var(--border);
+      opacity: 0; animation: fadeIn 0.5s 1s ease forwards;
+    }
+    .stat-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.8rem; font-weight: 700; color: var(--cyan);
+      display: block; line-height: 1;
+    }
+    .stat-label { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; display: block; }
+    @keyframes fadeIn { to { opacity: 1; } }
+
+    /* SECTIONS */
+    .section { padding: 6rem 2.5rem; }
+    .section-inner { max-width: 1000px; margin: 0 auto; }
+    .section-head {
+      display: flex; align-items: baseline; gap: 1rem;
+      margin-bottom: 3rem;
+      border-bottom: 1px solid var(--border); padding-bottom: 1rem;
+    }
+    .section-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem; font-weight: 700; color: var(--text);
+    }
+    .section-title .prompt { color: var(--muted); font-weight: 300; }
+    .section-sub { font-size: 0.8rem; color: var(--muted); margin-left: auto; }
+
+    /* PROMPT PACKS */
+    .packs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .pack-card {
+      background: var(--bg2);
+      padding: 1.8rem;
+      transition: background 0.2s;
+      cursor: pointer;
+      position: relative;
+    }
+    .pack-card:hover { background: var(--bg3); }
+    .pack-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem; font-weight: 500;
+      padding: 0.2rem 0.6rem;
+      display: inline-block; margin-bottom: 1rem;
+    }
+    .pack-tag.embed { background: rgba(0,212,255,0.1); color: var(--cyan); }
+    .pack-tag.linux { background: rgba(63,185,80,0.1); color: var(--green); }
+    .pack-tag.writing { background: rgba(245,166,35,0.1); color: var(--amber); }
+    .pack-tag.cooking { background: rgba(248,81,73,0.1); color: var(--red); }
+    .pack-tag.ai { background: rgba(188,140,255,0.1); color: #BC8CFF; }
+    .pack-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem; font-weight: 700; color: var(--text);
+      margin-bottom: 0.75rem; line-height: 1.3;
+    }
+    .pack-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.65; margin-bottom: 1.5rem; }
+    .pack-footer { display: flex; justify-content: space-between; align-items: center; }
+    .pack-price {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem; font-weight: 700; color: var(--green);
+    }
+    .pack-count { font-size: 0.72rem; color: var(--muted); }
+    .pack-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem; font-weight: 500;
+      background: transparent; border: 1px solid var(--border);
+      color: var(--text); padding: 0.35rem 0.85rem;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .pack-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+    .pack-badge {
+      position: absolute; top: 1rem; right: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem; font-weight: 700;
+      background: var(--amber); color: var(--bg);
+      padding: 0.15rem 0.5rem;
+    }
+
+    /* SERVICES */
+    .services-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    .service-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      padding: 2rem; transition: border-color 0.2s;
+    }
+    .service-card:hover { border-color: var(--cyan); }
+    .service-icon {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.5rem; color: var(--cyan); margin-bottom: 1rem;
+      display: block;
+    }
+    .service-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem; font-weight: 700; color: var(--text);
+      margin-bottom: 0.6rem;
+    }
+    .service-desc { font-size: 0.83rem; color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem; }
+    .service-price {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem; color: var(--green); margin-bottom: 1rem;
+      display: block;
+    }
+
+    /* COURSES */
+    .courses-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+    .course-row {
+      background: var(--bg2); padding: 1.5rem 2rem;
+      display: flex; align-items: center; gap: 2rem;
+      transition: background 0.2s; cursor: pointer;
+    }
+    .course-row:hover { background: var(--bg3); }
+    .course-status {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem; font-weight: 700;
+      padding: 0.2rem 0.6rem; white-space: nowrap;
+    }
+    .status-live { background: rgba(63,185,80,0.15); color: var(--green); }
+    .status-soon { background: rgba(245,166,35,0.15); color: var(--amber); }
+    .status-beta { background: rgba(0,212,255,0.15); color: var(--cyan); }
+    .course-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem; font-weight: 500; color: var(--text); flex: 1;
+    }
+    .course-price {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem; color: var(--green); white-space: nowrap;
+    }
+    .course-meta { font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
+
+    /* PREDICT THE BUG */
+    .predict-section { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .predict-inner { max-width: 1000px; margin: 0 auto; padding: 5rem 2.5rem; }
+    .predict-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem; color: var(--amber); margin-bottom: 1.5rem;
+      display: block;
+    }
+    .predict-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 700;
+      color: var(--text); line-height: 1.2; margin-bottom: 1rem;
+    }
+    .predict-title .hi { color: var(--amber); }
+    .predict-desc { font-size: 0.95rem; color: var(--muted); max-width: 55ch; line-height: 1.75; margin-bottom: 2.5rem; }
+    .code-block {
+      background: var(--bg); border: 1px solid var(--border);
+      padding: 1.5rem; font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem; color: var(--text); line-height: 1.8;
+      margin-bottom: 2rem; overflow-x: auto;
+    }
+    .code-block .comment { color: var(--muted); }
+    .code-block .keyword { color: #FF7B72; }
+    .code-block .fn { color: #D2A8FF; }
+    .code-block .str { color: #A5D6FF; }
+    .code-block .bug { background: rgba(248,81,73,0.2); color: var(--red); }
+    .predict-options { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; }
+    .predict-opt {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem; padding: 0.6rem 1.2rem;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--text); cursor: pointer; transition: all 0.2s;
+    }
+    .predict-opt:hover { border-color: var(--amber); color: var(--amber); }
+    .predict-opt.correct { border-color: var(--green); background: rgba(63,185,80,0.1); color: var(--green); }
+    .predict-opt.wrong { border-color: var(--red); background: rgba(248,81,73,0.1); color: var(--red); }
+    .predict-result { display: none; font-size: 0.82rem; color: var(--muted); padding: 1rem; border: 1px solid var(--border); background: var(--bg); margin-bottom: 1.5rem; }
+    .predict-result.show { display: block; }
+    .predict-leaderboard { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); }
+
+    /* WAITLIST */
+    .waitlist-section { padding: 6rem 2.5rem; }
+    .waitlist-inner { max-width: 700px; margin: 0 auto; text-align: center; }
+    .waitlist-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 700;
+      color: var(--text); margin-bottom: 1rem; line-height: 1.2;
+    }
+    .waitlist-title .cyan { color: var(--cyan); }
+    .waitlist-sub { font-size: 0.9rem; color: var(--muted); margin-bottom: 2rem; max-width: 48ch; margin-left: auto; margin-right: auto; }
+    .waitlist-form { display: flex; gap: 0; max-width: 480px; margin: 0 auto; }
+    .waitlist-input {
+      flex: 1; background: var(--bg2); border: 1px solid var(--border);
+      border-right: none; padding: 0.85rem 1.2rem;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+      color: var(--text); outline: none; transition: border-color 0.2s;
+    }
+    .waitlist-input::placeholder { color: var(--muted); }
+    .waitlist-input:focus { border-color: var(--cyan); }
+    .waitlist-btn {
+      background: var(--cyan); color: var(--bg); border: none;
+      padding: 0.85rem 1.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; white-space: nowrap; transition: background 0.2s;
+    }
+    .waitlist-btn:hover { background: #33ddff; }
+    .waitlist-items { margin-top: 2.5rem; display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
+    .waitlist-item {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem; color: var(--muted);
+      border: 1px solid var(--border); padding: 0.3rem 0.8rem;
+    }
+
+    /* ABOUT */
+    .about-section { background: var(--bg2); padding: 6rem 2.5rem; border-top: 1px solid var(--border); }
+    .about-inner { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+    .about-label { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--cyan); margin-bottom: 1.2rem; display: block; }
+    .about-title { font-family: 'JetBrains Mono', monospace; font-size: 1.6rem; font-weight: 700; color: var(--text); line-height: 1.2; margin-bottom: 1.2rem; }
+    .about-body { font-size: 0.88rem; color: var(--muted); line-height: 1.8; }
+    .about-body p + p { margin-top: 1rem; }
+    .about-stack { display: flex; flex-direction: column; gap: 0.75rem; }
+    .stack-row {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 0.85rem 1rem; background: var(--bg);
+      border: 1px solid var(--border); font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+    }
+    .stack-icon { color: var(--cyan); width: 16px; text-align: center; }
+    .stack-name { color: var(--text); flex: 1; }
+    .stack-yrs { color: var(--muted); font-size: 0.7rem; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 2.5rem;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 1rem;
+    }
+    .footer-logo { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; font-weight: 700; color: var(--cyan); }
+    .footer-logo span { color: var(--muted); }
+    .footer-note { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--muted); }
+
+    /* RESPONSIVE */
+    @media (max-width: 700px) {
+      nav { padding: 0.9rem 1.2rem; }
+      .nav-links { gap: 1rem; }
+      .hero, .section, .waitlist-section { padding-left: 1.2rem; padding-right: 1.2rem; }
+      .about-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+      .predict-inner { padding: 3rem 1.2rem; }
+      .waitlist-form { flex-direction: column; }
+      .waitlist-btn { width: 100%; }
+      .course-row { flex-wrap: wrap; gap: 0.75rem; }
+      footer { padding: 1.5rem 1.2rem; }
+      .hero-stats { gap: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#">hack<span>with</span>ai</a>
+  <ul class="nav-links">
+    <li><a href="#packs">Prompt Packs</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#courses">Courses</a></li>
+    <li><a href="#predict">Predict the Bug</a></li>
+    <li><a href="#waitlist" class="nav-cta">Join Waitlist</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <p class="hero-tag">status: building in public</p>
+  <h1 class="terminal-line">
+    AI tools built<br>for <span class="cyan">engineers</span><br>who ship <span class="amber">real</span> things<span class="cursor"></span>
+  </h1>
+  <p class="hero-sub">
+    Prompt packs, debugging guides, and AI-powered courses for embedded systems engineers, Linux hackers, and technical builders. From someone who has spent years debugging PCIe and DMA in the trenches.
+  </p>
+  <div class="hero-actions">
+    <a href="#packs" class="btn btn-primary">Browse prompt packs</a>
+    <a href="#predict" class="btn btn-secondary">Play: Predict the Bug</a>
+  </div>
+  <div class="hero-stats">
+    <div>
+      <span class="stat-num">12+</span>
+      <span class="stat-label">Prompt packs</span>
+    </div>
+    <div>
+      <span class="stat-num">200+</span>
+      <span class="stat-label">Curated prompts</span>
+    </div>
+    <div>
+      <span class="stat-num">15yrs</span>
+      <span class="stat-label">Embedded systems exp.</span>
+    </div>
+  </div>
+</section>
+
+<!-- PROMPT PACKS -->
+<section class="section" id="packs">
+  <div class="section-inner">
+    <div class="section-head">
+      <h2 class="section-title"><span class="prompt">$ ls</span> ./prompt-packs/</h2>
+      <span class="section-sub">Instantly usable · No fluff · Engineer-tested</span>
+    </div>
+    <div class="packs-grid">
+
+      <div class="pack-card">
+        <div class="pack-badge">BESTSELLER</div>
+        <span class="pack-tag embed">Embedded</span>
+        <p class="pack-name">PCIe & DMA Debugging Toolkit</p>
+        <p class="pack-desc">30 battle-tested prompts for diagnosing PCIe link errors, DMA transfer failures, BAR mapping issues, and IOMMU problems. Cut your debug time in half.</p>
+        <div class="pack-footer">
+          <div>
+            <span class="pack-price">$19</span>
+            <span class="pack-count">30 prompts</span>
+          </div>
+          <button class="pack-btn">Get pack →</button>
+        </div>
+      </div>
+
+      <div class="pack-card">
+        <span class="pack-tag embed">Embedded</span>
+        <p class="pack-name">GPIO & Interrupt Debugging Pack</p>
+        <p class="pack-desc">25 prompts covering GPIO configuration, interrupt latency, race conditions, and debouncing. Works across Linux kernel and bare-metal environments.</p>
+        <div class="pack-footer">
+          <div>
+            <span class="pack-price">$15</span>
+            <span class="pack-count">25 prompts</span>
+          </div>
+          <button class="pack-btn">Get pack →</button>
+        </div>
+      </div>
+
+      <div class="pack-card">
+        <span class="pack-tag linux">Linux</span>
+        <p class="pack-name">Linux Kernel Debugging Prompts</p>
+        <p class="pack-desc">Crash dumps, ftrace, perf, kgdb, and dmesg analysis. 28 prompts that help you navigate kernel panics, OOM killers, and scheduler issues with AI.</p>
+        <div class="pack-footer">
+          <div>
+            <span class="pack-price">$17</span>
+            <span class="pack-count">28 prompts</span>
+          </div>
+          <button class="pack-btn">Get pack →</button>
+        </div>
+      </div>
+
+      <div class="pack-card">
+        <span class="pack-tag linux">Linux</span>
+        <p class="pack-name">Linux Setup & Config Pack</p>
+        <p class="pack-desc">From fresh install to production-ready. 20 prompts covering shell setup, systemd, networking, SSH hardening, and dev environment configuration.</p>
+        <div class="pack-footer">
+          <div>
+            <span class="pack-price">$9</span>
+            <span class="pack-count">20 prompts</span>
+          </div>
+          <button class="pack-btn">Get pack →</button>
+        </div>
+      </div>
+
+      <div class="pack-card">
+        <span class="pack-tag ai">AI + Embedded</span>
+        <p class="pack-name">AI-Assisted Code Review for C/C++</p>
+        <p class="pack-desc">22 prompts for using AI to review embedded C/C++ code — memory leaks, buffer overflows, timing bugs, and MISRA compliance checks.</p>
+        <div class="pack-footer">
+          <div>
+            <span class="pack-price">$15</span>
+            <span class="pack-count">22 prompts</span>
+          </div>
+          <button class="pack-btn">Get pack →</button>
+        </div>
+      </div>
+
+      <div class="pack-card">
+        <span class="pack-tag writing">Writing</span>
+        <p class="pack-name">Technical Writing & Documentation</p>
+        <p class="pack-desc">20 prompts for writing datasheets, design documents, runbooks, API docs, and post-mortems. Speak clearly to both engineers and managers.</p>
+        <div class="pack-footer">
+          <div>
+            <span class="pack-price">$9</span>
+            <span class="pack-count">20 prompts</span>
+          </div>
+          <button class="pack-btn">Get pack →</button>
+        </div>
+      </div>
+
+      <div class="pack-card">
+        <span class="pack-tag cooking">Cooking</span>
+        <p class="pack-name">AI Chef: Indian Kitchen Pack</p>
+        <p class="pack-desc">15 prompts for using AI to plan Indian meals, adapt recipes by ingredient availability, scale for family cooking, and create weekly meal plans.</p>
+        <div class="pack-footer">
+          <div>
+            <span class="pack-price">$5</span>
+            <span class="pack-count">15 prompts</span>
+          </div>
+          <button class="pack-btn">Get pack →</button>
+        </div>
+      </div>
+
+      <div class="pack-card">
+        <span class="pack-tag ai">AI</span>
+        <p class="pack-name">Prompt Engineering Fundamentals</p>
+        <p class="pack-desc">25 meta-prompts teaching you how to write better prompts across any domain. Chain-of-thought, few-shot examples, output formatting, and more.</p>
+        <div class="pack-footer">
+          <div>
+            <span class="pack-price">$12</span>
+            <span class="pack-count">25 prompts</span>
+          </div>
+          <button class="pack-btn">Get pack →</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- PREDICT THE BUG -->
+<section class="predict-section" id="predict">
+  <div class="predict-inner">
+    <span class="predict-label">// community challenge — new puzzle every week</span>
+    <h2 class="predict-title">Predict the <span class="hi">Bug</span></h2>
+    <p class="predict-desc">A weekly embedded systems challenge. Read the code, spot the bug, earn points. Compete on the leaderboard. Built for engineers who want to stay sharp.</p>
+
+    <div class="code-block">
+<span class="comment">// Week #3 Challenge: PCIe DMA transfer — what's wrong?</span>
+
+<span class="keyword">static</span> <span class="keyword">int</span> <span class="fn">dma_transfer</span>(<span class="keyword">struct</span> device *dev, <span class="keyword">void</span> *buf, <span class="keyword">size_t</span> len) {
+    dma_addr_t dma_handle;
+    
+    dma_handle = <span class="fn">dma_map_single</span>(dev, buf, len, DMA_TO_DEVICE);
+    
+    <span class="keyword">if</span> (<span class="fn">dma_mapping_error</span>(dev, dma_handle))
+        <span class="keyword">return</span> -ENOMEM;
+    
+    <span class="fn">write_reg</span>(DMA_ADDR_LOW,  dma_handle & 0xFFFFFFFF);
+    <span class="fn">write_reg</span>(DMA_ADDR_HIGH, dma_handle >> 32);
+    <span class="fn">write_reg</span>(DMA_LEN, len);
+    <span class="fn">write_reg</span>(DMA_CTRL, DMA_START);
+    
+    <span class="bug">    // transfer complete — unmap</span>
+    <span class="fn">dma_unmap_single</span>(dev, dma_handle, len, DMA_TO_DEVICE);
+    <span class="keyword">return</span> 0;
+}
+    </div>
+
+    <div class="predict-options">
+      <button class="predict-opt" onclick="answer(this, false)">A. Missing cache flush before DMA</button>
+      <button class="predict-opt" onclick="answer(this, true)">B. DMA unmapped before transfer completes</button>
+      <button class="predict-opt" onclick="answer(this, false)">C. Wrong DMA direction flag</button>
+      <button class="predict-opt" onclick="answer(this, false)">D. Integer overflow on len</button>
+    </div>
+
+    <div class="predict-result" id="predict-result"></div>
+
+    <div class="predict-leaderboard">
+      // this week: 47 engineers attempted · 31 correct (66%) · top streak: 8 weeks
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="section" id="services">
+  <div class="section-inner">
+    <div class="section-head">
+      <h2 class="section-title"><span class="prompt">$ cat</span> ./services.md</h2>
+      <span class="section-sub">Book a session · Fixed-price packages</span>
+    </div>
+    <div class="services-grid">
+
+      <div class="service-card">
+        <span class="service-icon">⚡</span>
+        <p class="service-name">PCIe / DMA Debug Session</p>
+        <p class="service-desc">1-hour live debugging session for PCIe link issues, DMA transfer failures, BAR mapping, or IOMMU problems. Screen share, root cause analysis, fix plan.</p>
+        <span class="service-price">$150 / session</span>
+        <a href="#waitlist" class="btn btn-secondary" style="font-size:0.78rem;padding:0.6rem 1.2rem;">Book session →</a>
+      </div>
+
+      <div class="service-card">
+        <span class="service-icon">🐧</span>
+        <p class="service-name">Linux Environment Setup</p>
+        <p class="service-desc">Full dev environment setup for embedded Linux — cross-compilation, Yocto, Buildroot, kernel config, and toolchain. Delivered in 48hrs.</p>
+        <span class="service-price">$200 flat</span>
+        <a href="#waitlist" class="btn btn-secondary" style="font-size:0.78rem;padding:0.6rem 1.2rem;">Book service →</a>
+      </div>
+
+      <div class="service-card">
+        <span class="service-icon">🔍</span>
+        <p class="service-name">Code Review: Embedded C/C++</p>
+        <p class="service-desc">Async review of up to 1000 lines of embedded C/C++. Memory safety, timing, interrupt handling, and AI-assisted refactor suggestions. 48hr turnaround.</p>
+        <span class="service-price">$99 / review</span>
+        <a href="#waitlist" class="btn btn-secondary" style="font-size:0.78rem;padding:0.6rem 1.2rem;">Submit code →</a>
+      </div>
+
+      <div class="service-card">
+        <span class="service-icon">🌐</span>
+        <p class="service-name">Landing Page Build</p>
+        <p class="service-desc">A production-ready landing page like this one — custom design, hosted on GitHub Pages, with a lessons/blog JSON system. Live in 48hrs.</p>
+        <span class="service-price">$149 flat</span>
+        <a href="#waitlist" class="btn btn-secondary" style="font-size:0.78rem;padding:0.6rem 1.2rem;">Get a page →</a>
+      </div>
+
+      <div class="service-card">
+        <span class="service-icon">🤖</span>
+        <p class="service-name">AI Workflow Consulting</p>
+        <p class="service-desc">1-hour session on integrating AI tools into your engineering workflow — code review, documentation, debugging, and prompt engineering for your stack.</p>
+        <span class="service-price">$120 / session</span>
+        <a href="#waitlist" class="btn btn-secondary" style="font-size:0.78rem;padding:0.6rem 1.2rem;">Book session →</a>
+      </div>
+
+      <div class="service-card">
+        <span class="service-icon">📄</span>
+        <p class="service-name">Technical Resume Review</p>
+        <p class="service-desc">Resume review for embedded/systems engineers targeting FAANG and top hardware companies. AI-assisted rewrite, ATS optimisation, and cover letter.</p>
+        <span class="service-price">$79 flat</span>
+        <a href="#waitlist" class="btn btn-secondary" style="font-size:0.78rem;padding:0.6rem 1.2rem;">Submit resume →</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- COURSES -->
+<section class="section" id="courses" style="padding-top:0">
+  <div class="section-inner">
+    <div class="section-head">
+      <h2 class="section-title"><span class="prompt">$ ls</span> ./courses/</h2>
+      <span class="section-sub">Self-paced · Practical · No filler</span>
+    </div>
+    <div class="courses-list">
+      <div class="course-row">
+        <span class="course-status status-live">LIVE</span>
+        <span class="course-name">AI for Embedded Engineers — Zero to Useful</span>
+        <span class="course-meta">6 modules · 4hrs</span>
+        <span class="course-price">$49</span>
+      </div>
+      <div class="course-row">
+        <span class="course-status status-live">LIVE</span>
+        <span class="course-name">Linux Setup with AI Tools — Dev Environment Masterclass</span>
+        <span class="course-meta">5 modules · 3hrs</span>
+        <span class="course-price">$39</span>
+      </div>
+      <div class="course-row">
+        <span class="course-status status-beta">BETA</span>
+        <span class="course-name">PCIe from Scratch — Protocol to Driver</span>
+        <span class="course-meta">8 modules · 6hrs</span>
+        <span class="course-price">$69</span>
+      </div>
+      <div class="course-row">
+        <span class="course-status status-soon">SOON</span>
+        <span class="course-name">Prompt Engineering for Technical People</span>
+        <span class="course-meta">4 modules · 2.5hrs</span>
+        <span class="course-price">$29</span>
+      </div>
+      <div class="course-row">
+        <span class="course-status status-soon">SOON</span>
+        <span class="course-name">Debugging Embedded Linux — A Field Manual</span>
+        <span class="course-meta">7 modules · 5hrs</span>
+        <span class="course-price">$59</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about-section">
+  <div class="about-inner">
+    <div>
+      <span class="about-label">// whoami</span>
+      <h2 class="about-title">Built by an engineer.<br>Not a content creator.</h2>
+      <div class="about-body">
+        <p>I'm Soma — embedded systems engineer based in the Bay Area with 15+ years working on PCIe, DMA, GPIO, and Linux kernel drivers. I've debugged things at 3am that nobody has written about.</p>
+        <p>HackWithAI is where I turn that experience into tools, prompts, and guides that actually work — tested on real hardware, real bugs, and real deadlines. No fluff, no beginner hand-holding.</p>
+        <p>Everything here is something I use myself or wish I'd had earlier in my career.</p>
+      </div>
+    </div>
+    <div class="about-stack">
+      <div class="stack-row"><span class="stack-icon">⚡</span><span class="stack-name">PCIe / DMA / IOMMU</span><span class="stack-yrs">10+ yrs</span></div>
+      <div class="stack-row"><span class="stack-icon">🐧</span><span class="stack-name">Linux Kernel / Yocto</span><span class="stack-yrs">12+ yrs</span></div>
+      <div class="stack-row"><span class="stack-icon">⚙️</span><span class="stack-name">Embedded C / C++</span><span class="stack-yrs">15+ yrs</span></div>
+      <div class="stack-row"><span class="stack-icon">🔌</span><span class="stack-name">GPIO / Interrupt / SPI / I2C</span><span class="stack-yrs">10+ yrs</span></div>
+      <div class="stack-row"><span class="stack-icon">🤖</span><span class="stack-name">Claude / GPT / AI tooling</span><span class="stack-yrs">3+ yrs</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- WAITLIST -->
+<section class="waitlist-section" id="waitlist">
+  <div class="waitlist-inner">
+    <h2 class="waitlist-title">Get early access to<br>the <span class="cyan">PCIe cheat sheet</span></h2>
+    <p class="waitlist-sub">The most complete AI-assisted PCIe debugging reference for Linux engineers. Launching soon — join the waitlist for 40% off.</p>
+    <div class="waitlist-form">
+      <input class="waitlist-input" type="email" placeholder="your@email.com" />
+      <button class="waitlist-btn">Join →</button>
+    </div>
+    <div class="waitlist-items">
+      <span class="waitlist-item">✓ PCIe Debug Cheat Sheet</span>
+      <span class="waitlist-item">✓ DMA Transfer Guide</span>
+      <span class="waitlist-item">✓ Weekly Bug Challenge</span>
+      <span class="waitlist-item">✓ Early pricing</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span class="footer-logo">hack<span>with</span>ai.store</span>
+  <span class="footer-note">// built by an engineer · Bay Area · 2026</span>
+</footer>
+
+<script>
+  function answer(el, correct) {
+    const opts = document.querySelectorAll('.predict-opt');
+    const result = document.getElementById('predict-result');
+    opts.forEach(o => o.disabled = true);
+    if (correct) {
+      el.classList.add('correct');
+      result.textContent = '✓ Correct. The DMA unmap happens immediately after writing the start register — before the hardware has finished the transfer. The CPU is now free to write over the buffer while DMA is still reading it. Fix: wait for a completion interrupt or poll the status register before unmapping.';
+      result.style.borderColor = 'var(--green)';
+    } else {
+      el.classList.add('wrong');
+      opts.forEach(o => { if (o.textContent.includes('B.')) o.classList.add('correct'); });
+      result.textContent = '✗ Not quite. The bug is that dma_unmap_single() is called immediately after writing DMA_START — before the hardware transfer completes. This creates a race condition where the CPU may reclaim the buffer while DMA is still reading from it.';
+      result.style.borderColor = 'var(--red)';
+    }
+    result.classList.add('show');
+  }
+</script>
+
+</body>
+</html>
